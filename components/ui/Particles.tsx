@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useMemo } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ParticleConfig {
   id: number
@@ -20,19 +20,26 @@ interface ParticlesProps {
   className?: string
 }
 
+function generateParticles(count: number): ParticleConfig[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    color: i % 3 === 0 ? '#FF00E5' : '#00F0FF',
+    duration: Math.random() * 12 + 8,
+    delay: Math.random() * 5,
+    xDrift: (Math.random() - 0.5) * 60,
+    yDrift: (Math.random() - 0.5) * 60,
+  }))
+}
+
 export default function Particles({ count = 24, className }: ParticlesProps) {
-  const particles = useMemo<ParticleConfig[]>(() => {
-    return Array.from({ length: count }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      color: i % 3 === 0 ? '#FF00E5' : '#00F0FF',
-      duration: Math.random() * 12 + 8,
-      delay: Math.random() * 5,
-      xDrift: (Math.random() - 0.5) * 60,
-      yDrift: (Math.random() - 0.5) * 60,
-    }))
+  // Initialize to empty on server; populate on client to avoid hydration mismatch
+  const [particles, setParticles] = useState<ParticleConfig[]>([])
+
+  useEffect(() => {
+    setParticles(generateParticles(count))
   }, [count])
 
   return (
