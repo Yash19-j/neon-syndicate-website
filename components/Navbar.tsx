@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import NeonButton from './ui/NeonButton'
+import { useAuth } from './AuthContext'
 
 const NAV_LINKS = [
   { label: 'Home', href: '#hero' },
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 ]
 
 export default function Navbar() {
+  const { openAuth } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -61,7 +63,7 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="hidden md:block">
-          <NeonButton variant="magenta" size="sm">
+          <NeonButton variant="magenta" size="sm" onClick={() => openAuth('signup')}>
             Join Now
           </NeonButton>
         </div>
@@ -106,7 +108,7 @@ export default function Navbar() {
                 {link.label}
               </button>
             ))}
-            <NeonButton variant="magenta" size="sm">
+            <NeonButton variant="magenta" size="sm" onClick={() => { openAuth('signup'); setMobileOpen(false) }}>
               Join Now
             </NeonButton>
           </motion.div>

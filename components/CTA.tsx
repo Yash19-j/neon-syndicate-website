@@ -3,8 +3,10 @@
 import { motion } from 'framer-motion'
 import NeonButton from './ui/NeonButton'
 import Particles from './ui/Particles'
+import { useAuth } from './AuthContext'
 
 export default function CTA() {
+  const { openAuth } = useAuth()
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6">
       {/* Animated gradient background */}
@@ -75,11 +77,11 @@ export default function CTA() {
           transition={{ delay: 0.5, duration: 0.7 }}
           className="flex flex-col sm:flex-row gap-4"
         >
-          <NeonButton variant="cyan" size="lg">
+          <NeonButton variant="cyan" size="lg" onClick={() => openAuth('signup')}>
             Join Syndicate
           </NeonButton>
-          <NeonButton variant="magenta" size="lg">
-            View Open Slots
+          <NeonButton variant="magenta" size="lg" onClick={() => openAuth('signin')}>
+            Sign In
           </NeonButton>
         </motion.div>
 

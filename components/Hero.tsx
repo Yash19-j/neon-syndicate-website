@@ -4,8 +4,11 @@ import { motion } from 'framer-motion'
 import NeonButton from './ui/NeonButton'
 import MatchTicker from './ui/MatchTicker'
 import Particles from './ui/Particles'
+import { useAuth } from './AuthContext'
 
 export default function Hero() {
+  const { openAuth } = useAuth()
+
   const handleScroll = (href: string) => {
     const el = document.querySelector(href)
     if (el) el.scrollIntoView({ behavior: 'smooth' })
@@ -93,7 +96,7 @@ export default function Hero() {
           <NeonButton variant="cyan" size="lg" onClick={() => handleScroll('#featured-match')}>
             Watch Live
           </NeonButton>
-          <NeonButton variant="magenta" size="lg" onClick={() => handleScroll('#roster')}>
+          <NeonButton variant="magenta" size="lg" onClick={() => openAuth('signup')}>
             Join Team
           </NeonButton>
         </motion.div>
