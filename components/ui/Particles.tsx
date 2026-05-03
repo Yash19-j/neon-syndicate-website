@@ -47,8 +47,8 @@ export default function Particles({ count = 24, className }: ParticlesProps) {
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
-            width: p.size,
-            height: p.size,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
             background: p.color,
             boxShadow: `0 0 ${p.size * 3}px ${p.color}`,
           }}

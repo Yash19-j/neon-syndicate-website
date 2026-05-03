@@ -93,19 +93,18 @@ function BracketNode({ match, size = 'sm' }: { match: MatchNode; size?: 'sm' | '
 
 // SVG connector lines between rounds
 function BracketConnectors({ count, color = '#00F0FF' }: { count: number; color?: string }) {
-  const spacing = 100 / count
+  const totalHeight = count * 110
+  const spacing = totalHeight / count
   return (
     <svg
       className="hidden lg:block shrink-0"
       width="48"
-      height="100%"
-      style={{ minHeight: `${count * 110}px` }}
-      preserveAspectRatio="none"
+      height={totalHeight}
     >
       {Array.from({ length: count / 2 }, (_, i) => {
-        const y1 = (i * 2 + 0.5) * spacing + '%'
-        const y2 = (i * 2 + 1.5) * spacing + '%'
-        const yMid = ((i * 2 + 1) * spacing) + '%'
+        const y1 = (i * 2 + 0.5) * spacing
+        const y2 = (i * 2 + 1.5) * spacing
+        const yMid = (i * 2 + 1) * spacing
         return (
           <g key={i}>
             <line x1="0" y1={y1} x2="24" y2={y1} stroke={color} strokeWidth="1" strokeOpacity="0.4" />

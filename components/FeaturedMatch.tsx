@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import SectionDivider from './ui/SectionDivider'
 import GlassCard from './ui/GlassCard'
 import PlayerCard from './ui/PlayerCard'
+import NeonButton from './ui/NeonButton'
 
 const TEAM_A = { name: 'TEAM ALPHA', abbr: 'TA', color: '#00F0FF', gradient: 'from-[#00F0FF]/30 to-[#00F0FF]/5' }
 const TEAM_B = { name: 'TEAM OMEGA', abbr: 'TO', color: '#FF00E5', gradient: 'from-[#FF00E5]/30 to-[#FF00E5]/5' }
@@ -27,9 +28,21 @@ function useCountdown(targetMs: number) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
+function useViewerCount(base: number) {
+  const [count, setCount] = useState(base)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCount((c) => c + Math.floor((Math.random() - 0.3) * 20))
+    }, 3000)
+    return () => clearInterval(id)
+  }, [])
+  return count.toLocaleString()
+}
+
 export default function FeaturedMatch() {
   const countdown = useCountdown(2 * 60 * 60 * 1000)
   const isLive = countdown === 'LIVE NOW'
+  const viewers = useViewerCount(14_280)
 
   return (
     <section id="featured-match" className="relative py-24 px-6">
@@ -116,19 +129,30 @@ export default function FeaturedMatch() {
                 MAP: NEO_TOKYO_2049
               </p>
               {isLive ? (
-                <motion.div
-                  className="flex items-center gap-2 px-4 py-2 rounded-sm border border-[#FF00E5]/60 bg-[#FF00E5]/10"
-                  animate={{ opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                >
-                  <div className="w-2 h-2 rounded-full bg-[#FF00E5]" />
-                  <span className="font-display font-700 text-[#FF00E5] tracking-widest text-sm">LIVE NOW</span>
-                </motion.div>
+                <div className="flex flex-col items-center gap-3">
+                  <motion.div
+                    className="flex items-center gap-2 px-4 py-2 rounded-sm border border-[#FF00E5]/60 bg-[#FF00E5]/10"
+                    animate={{ opacity: [1, 0.6, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-[#FF00E5]" />
+                    <span className="font-display font-bold text-[#FF00E5] tracking-widest text-sm">LIVE NOW</span>
+                  </motion.div>
+                  <p className="font-mono-custom text-[10px] text-white/30 tracking-widest">
+                    {viewers} viewers
+                  </p>
+                  <NeonButton variant="cyan" size="sm">
+                    Watch Stream
+                  </NeonButton>
+                </div>
               ) : (
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-2">
                   <p className="font-mono-custom text-white/30 text-[10px] tracking-widest uppercase">Match starts in</p>
                   <p className="font-display font-black text-3xl md:text-4xl text-[#FBFF00] neon-yellow-text tracking-widest">
                     {countdown}
+                  </p>
+                  <p className="font-mono-custom text-[10px] text-white/20 tracking-widest">
+                    {viewers} registered to watch
                   </p>
                 </div>
               )}

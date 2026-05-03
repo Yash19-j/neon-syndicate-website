@@ -33,9 +33,9 @@ export default function Navbar() {
     <motion.nav
       className="fixed top-0 left-0 right-0 z-40 px-6 py-4"
       animate={{
-        background: scrolled ? 'rgba(10,10,20,0.85)' : 'transparent',
+        background: scrolled ? 'rgba(10,10,20,0.85)' : 'rgba(0,0,0,0)',
         backdropFilter: scrolled ? 'blur(24px)' : 'blur(0px)',
-        borderBottom: scrolled ? '1px solid rgba(0,240,255,0.15)' : '1px solid transparent',
+        borderBottom: scrolled ? '1px solid rgba(0,240,255,0.15)' : '1px solid rgba(0,240,255,0)',
       }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >

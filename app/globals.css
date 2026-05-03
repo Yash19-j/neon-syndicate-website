@@ -145,4 +145,27 @@
     border: 1px solid rgba(255, 0, 229, 0.5);
     box-shadow: 0 0 12px rgba(255, 0, 229, 0.2), inset 0 0 12px rgba(255, 0, 229, 0.05);
   }
+
+  /* CTA section pulsing radial gradient — avoids Framer Motion color-format issues */
+  .cta-pulse-bg {
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,0,229,0.12) 0%, rgba(0,240,255,0.06) 50%, transparent 80%);
+    animation: cta-bg-pulse 6s ease-in-out infinite;
+  }
+  @keyframes cta-bg-pulse {
+    0%, 100% {
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,0,229,0.12) 0%, rgba(0,240,255,0.06) 50%, transparent 80%);
+    }
+    50% {
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,240,255,0.12) 0%, rgba(255,0,229,0.06) 50%, transparent 80%);
+    }
+  }
+
+  /* Ticker scroll animation */
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker-animate {
+    animation: ticker-scroll 28s linear infinite;
+  }
 }

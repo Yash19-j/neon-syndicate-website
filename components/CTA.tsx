@@ -9,17 +9,9 @@ export default function CTA() {
   const { openAuth } = useAuth()
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6">
-      {/* Animated gradient background */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        animate={{
-          background: [
-            'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,0,229,0.12) 0%, rgba(0,240,255,0.06) 50%, transparent 80%)',
-            'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,240,255,0.12) 0%, rgba(255,0,229,0.06) 50%, transparent 80%)',
-            'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,0,229,0.12) 0%, rgba(0,240,255,0.06) 50%, transparent 80%)',
-          ],
-        }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+      {/* Animated gradient background — uses CSS keyframes to avoid Framer Motion color issues */}
+      <div
+        className="absolute inset-0 pointer-events-none cta-pulse-bg"
         aria-hidden="true"
       />
 
