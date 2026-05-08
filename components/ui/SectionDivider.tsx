@@ -4,6 +4,7 @@ interface SectionDividerProps {
   number: string
   label?: string
   className?: string
+  title: string;
 }
 
 export default function SectionDivider({ number, label, className }: SectionDividerProps) {

@@ -136,7 +136,7 @@ export default function TournamentBracket() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <SectionDivider number="03" label="Bracket" />
+          <SectionDivider number="03" title="Bracket" />
         </motion.div>
 
         <div className="overflow-x-auto pb-4">

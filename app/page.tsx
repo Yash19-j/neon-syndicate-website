@@ -1,7 +1,6 @@
 import Scanlines from '@/components/ui/Scanlines'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
-import FeaturedMatch from '@/components/FeaturedMatch'
 import TeamRoster from '@/components/TeamRoster'
 import TournamentBracket from '@/components/TournamentBracket'
 import LatestNews from '@/components/LatestNews'
@@ -10,28 +9,24 @@ import Footer from '@/components/Footer'
 import { AuthProvider } from '@/components/AuthContext'
 import AuthModal from '@/components/AuthModal'
 
-export default function Page() {
+import { getPlayers } from '@/src/lib/getPlayers';
+import { getNews } from '@/src/lib/getNews';
+import FeaturedMatch from "@/components/FeaturedMatch";
+
+export default async function Page() {
+  const players = await getPlayers();
+  const news = await getNews();
+
   return (
-    <AuthProvider>
-      <main className="relative bg-[#0A0A0F] text-white overflow-x-hidden">
-        {/* Fixed scanline overlay */}
-        <Scanlines />
-
-        {/* Auth modal — rendered at root so it covers everything */}
-        <AuthModal />
-
-        {/* Sticky navigation */}
-        <Navbar />
-
-        {/* Page sections */}
-        <Hero />
-        <FeaturedMatch />
-        <TeamRoster />
-        <TournamentBracket />
-        <LatestNews />
-        <CTA />
-        <Footer />
-      </main>
-    </AuthProvider>
-  )
+    <>
+      <Navbar />
+      <Hero />
+      <FeaturedMatch players={players} />   {/* ← add players prop */}
+      <TeamRoster players={players} />
+      <TournamentBracket />
+      <LatestNews news={news} />
+      <CTA />
+      <Footer />
+    </>
+  );
 }
