@@ -3,10 +3,10 @@
 import { motion } from 'framer-motion'
 
 const TICKER_ITEMS = [
-  { label: 'NEON SYND', vs: 'GHOST CTRL', info: 'Grand Final · May 10', status: 'UPCOMING', color: '#FBFF00' },
-  { label: 'CYPHER_X', vs: '3.41 K/D', info: 'New Pro Circuit Record', status: 'RECORD', color: '#FF00E5' },
-  { label: 'ZERO WAVE', vs: 'GHOST CTRL', info: 'SF Result · 1-2', status: 'RESULT', color: '#00F0FF' },
-  { label: 'NEON SYND', vs: 'CYBER RIOT', info: 'SF Result · 2-0', status: 'RESULT', color: '#00F0FF' },
+  { label: 'CYBER PHEONIX', vs: 'RAZOR EDGE', info: 'Grand Final · JUNE 30', status: 'UPCOMING', color: '#FBFF00' },
+  { label: 'VOID STAR', vs: '3.41 K/D', info: 'New Pro Circuit Record', status: 'RECORD', color: '#FF00E5' },
+  { label: 'STROM HAWK', vs: 'RAZOR EDGE', info: 'SF Result · 1-2', status: 'RESULT', color: '#00F0FF' },
+  { label: 'CYBER PHEONIX', vs: 'NEON_VIPER', info: 'SF Result · 2-0', status: 'RESULT', color: '#00F0FF' },
 ]
 
 export default function MatchTicker() {

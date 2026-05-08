@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Orbitron, Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { AuthProvider } from '@/components/AuthContext'
+import AuthModal from '@/components/AuthModal'
 import './globals.css'
 
 const orbitron = Orbitron({
@@ -36,7 +38,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${orbitron.variable} ${inter.variable} ${jetbrainsMono.variable} bg-[#0A0A0F]`}>
       <body className="font-sans antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+          <AuthModal />
+        </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

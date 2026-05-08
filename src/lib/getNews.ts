@@ -19,7 +19,7 @@ export async function getNews(): Promise<NewsArticle[]> {
     id: item.sys.id,
     title: item.fields.title,
     slug: item.fields.slug,
-    excerpt: extractTextFromRichText(item.fields.excerpt),
+    excerpt: (item.fields.excerpt as string) ?? '',
     date: item.fields.date,
     image: item.fields.image?.fields?.file?.url
       ? `https:${item.fields.image.fields.file.url}`

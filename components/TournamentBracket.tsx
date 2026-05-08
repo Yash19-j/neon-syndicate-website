@@ -1,224 +1,206 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import SectionDivider from './ui/SectionDivider'
+import { motion } from "framer-motion";
+import GlassCard from "./ui/GlassCard";
+import SectionDivider from "./ui/SectionDivider";
+import type { Player } from "@/src/lib/getPlayers";
 
-interface MatchNode {
-  id: string
-  teamA: string
-  teamB: string
-  winner?: string
-  score?: string
+interface TournamentBracketProps {
+  players: Player[];
 }
 
-const QF: MatchNode[] = [
-  { id: 'qf1', teamA: 'NEON SYND', teamB: 'VOID CREW', winner: 'NEON SYND', score: '2-0' },
-  { id: 'qf2', teamA: 'CYBER RIOT', teamB: 'DATA HAWKS', winner: 'CYBER RIOT', score: '2-1' },
-  { id: 'qf3', teamA: 'STATIC FX', teamB: 'ZERO WAVE', winner: 'ZERO WAVE', score: '2-1' },
-  { id: 'qf4', teamA: 'PIXEL RAGE', teamB: 'GHOST CTRL', winner: 'GHOST CTRL', score: '2-0' },
-]
+// Helper to get player name or fallback
+const playerName = (players: Player[], index: number) =>
+  players[index]?.name ?? `Player ${index + 1}`;
 
-const SF: MatchNode[] = [
-  { id: 'sf1', teamA: 'NEON SYND', teamB: 'CYBER RIOT', winner: 'NEON SYND', score: '2-0' },
-  { id: 'sf2', teamA: 'ZERO WAVE', teamB: 'GHOST CTRL', winner: 'GHOST CTRL', score: '2-1' },
-]
-
-const FINAL: MatchNode = {
-  id: 'final',
-  teamA: 'NEON SYND',
-  teamB: 'GHOST CTRL',
+interface Match {
+  teamA: string;
+  teamB: string;
+  winner: string;
 }
 
-function BracketNode({ match, size = 'sm' }: { match: MatchNode; size?: 'sm' | 'md' | 'lg' }) {
-  const [hovered, setHovered] = useState(false)
+export default function TournamentBracket({ players }: TournamentBracketProps) {
+  // Build the bracket matches (hardcoded winners for now)
+  const quarters: Match[] = [
+    { teamA: playerName(players, 0), teamB: playerName(players, 1), winner: playerName(players, 0) },
+    { teamA: playerName(players, 2), teamB: playerName(players, 3), winner: playerName(players, 2) },
+    { teamA: playerName(players, 4), teamB: playerName(players, 5), winner: playerName(players, 4) },
+    { teamA: playerName(players, 6), teamB: playerName(players, 7), winner: playerName(players, 6) },
+  ];
 
-  const padding = size === 'lg' ? 'p-4' : 'p-3'
-  const nameSize = size === 'lg' ? 'text-sm' : 'text-xs'
-  const minW = size === 'lg' ? 'min-w-[180px]' : 'min-w-[150px]'
+  const semis: Match[] = [
+    { teamA: quarters[0].winner, teamB: quarters[1].winner, winner: quarters[0].winner },
+    { teamA: quarters[2].winner, teamB: quarters[3].winner, winner: quarters[2].winner },
+  ];
+
+  const final: Match = {
+    teamA: semis[0].winner,
+    teamB: semis[1].winner,
+    winner: semis[0].winner,
+  };
 
   return (
-    <motion.div
-      className={`glass-panel ${padding} ${minW} flex flex-col gap-2 cursor-default`}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
-      animate={{
-        borderColor: hovered ? '#00F0FF' : 'rgba(0,240,255,0.25)',
-        boxShadow: hovered ? '0 0 20px rgba(0,240,255,0.35)' : '0 0 0px transparent',
-      }}
-      transition={{ duration: 0.25 }}
-    >
-      {/* Team A */}
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className={`font-display font-700 ${nameSize} truncate ${
-            match.winner === match.teamA ? 'text-[#00F0FF]' : 'text-white/50'
-          }`}
-        >
-          {match.teamA}
-        </span>
-        {match.winner === match.teamA && (
-          <span className="font-mono-custom text-[9px] text-[#00F0FF] shrink-0">{match.score?.split('-')[0]}</span>
-        )}
-      </div>
-      <div className="h-px bg-white/10" />
-      {/* Team B */}
-      <div className="flex items-center justify-between gap-2">
-        <span
-          className={`font-display font-700 ${nameSize} truncate ${
-            match.winner === match.teamB ? 'text-[#FF00E5]' : 'text-white/50'
-          }`}
-        >
-          {match.teamB}
-        </span>
-        {match.winner === match.teamB && (
-          <span className="font-mono-custom text-[9px] text-[#FF00E5] shrink-0">{match.score?.split('-')[1]}</span>
-        )}
-      </div>
-      {match.winner && (
-        <div className="mt-1 pt-1 border-t border-white/5">
-          <span className="font-mono-custom text-[8px] text-[#FBFF00] tracking-widest">
-            WINNER: {match.winner}
-          </span>
-        </div>
-      )}
-      {!match.winner && hovered && (
-        <div className="mt-1 pt-1 border-t border-white/5">
-          <span className="font-mono-custom text-[8px] text-white/30 tracking-widest">UPCOMING</span>
-        </div>
-      )}
-    </motion.div>
-  )
-}
+    <section id="bracket" className="relative py-24 px-6 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-[#0A0A0F]" />
 
-// SVG connector lines between rounds
-function BracketConnectors({ count, color = '#00F0FF' }: { count: number; color?: string }) {
-  const totalHeight = count * 110
-  const spacing = totalHeight / count
-  return (
-    <svg
-      className="hidden lg:block shrink-0"
-      width="48"
-      height={totalHeight}
-    >
-      {Array.from({ length: count / 2 }, (_, i) => {
-        const y1 = (i * 2 + 0.5) * spacing
-        const y2 = (i * 2 + 1.5) * spacing
-        const yMid = (i * 2 + 1) * spacing
-        return (
-          <g key={i}>
-            <line x1="0" y1={y1} x2="24" y2={y1} stroke={color} strokeWidth="1" strokeOpacity="0.4" />
-            <line x1="24" y1={y1} x2="24" y2={y2} stroke={color} strokeWidth="1" strokeOpacity="0.4" />
-            <line x1="24" y1={y2} x2="0" y2={y2} stroke={color} strokeWidth="1" strokeOpacity="0.4" />
-            <line x1="24" y1={yMid} x2="48" y2={yMid} stroke={color} strokeWidth="1.5" strokeOpacity="0.6" />
-          </g>
-        )
-      })}
-    </svg>
-  )
-}
-
-export default function TournamentBracket() {
-  return (
-    <section id="bracket" className="relative py-24 px-6">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden="true"
-        style={{
-          background:
-            'radial-gradient(ellipse 50% 50% at 80% 50%, rgba(0,240,255,0.04) 0%, transparent 70%)',
-        }}
-      />
-      <div className="max-w-6xl mx-auto relative z-10">
+      {/* Midground rotating ring */}
+      <div className="absolute inset-0 opacity-10">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <SectionDivider number="03" title="Bracket" />
-        </motion.div>
+          className="absolute top-1/3 right-0 w-96 h-96 border border-[#FBFF00] rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
 
-        <div className="overflow-x-auto pb-4">
-          <div className="flex items-center gap-0 min-w-[700px]">
-            {/* Quarterfinals */}
-            <div className="flex flex-col justify-around gap-4 flex-shrink-0" style={{ minHeight: '440px' }}>
-              <p className="font-mono-custom text-[9px] text-[#00F0FF]/40 tracking-widest uppercase mb-2 text-center">
-                Quarterfinals
-              </p>
-              {QF.map((m, i) => (
+      {/* Content */}
+      <div className="relative z-20">
+        <SectionDivider number="03" title="BRACKET" />
+
+        <div className="mt-16 overflow-x-auto pb-6">
+          <div className="flex items-stretch gap-20 min-w-max px-6 mx-auto">
+            {/* Quarter Finals */}
+            <BracketRound
+              title="Quarter Finals"
+              matches={quarters}
+              color="#00F0FF"
+              connectorToNext={true}
+            />
+
+            {/* Semi Finals – aligned between quarter pairs */}
+            <div className="flex flex-col justify-around h-[600px]">
+              <h3 className="font-display text-xs tracking-widest text-[#FF00E5] uppercase mb-2">
+                Semi Finals
+              </h3>
+              {semis.map((match, i) => (
                 <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  key={`sf-${i}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: 0.2 + i * 0.1 }}
                 >
-                  <BracketNode match={m} />
+                  <GlassCard className="min-w-[200px] p-4">
+                    <div className="flex items-center justify-between">
+                      <p className="font-mono text-sm text-white">{match.teamA}</p>
+                      {match.winner === match.teamA && <WinBadge color="#FF00E5" />}
+                    </div>
+                    <p className="text-[10px] text-white/20 font-display tracking-wider my-1 text-center">
+                      VS
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="font-mono text-sm text-white">{match.teamB}</p>
+                      {match.winner === match.teamB && <WinBadge color="#FF00E5" />}
+                    </div>
+                    {match.winner && (
+                      <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-1.5">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: "#FF00E5", boxShadow: "0 0 6px #FF00E5" }}
+                        />
+                        <span className="text-[10px] font-mono text-[#FF00E5] uppercase">
+                          Winner
+                        </span>
+                      </div>
+                    )}
+                  </GlassCard>
                 </motion.div>
               ))}
             </div>
 
-            {/* QF → SF connectors */}
-            <BracketConnectors count={4} />
-
-            {/* Semifinals */}
-            <div className="flex flex-col justify-around gap-4 flex-shrink-0" style={{ minHeight: '440px' }}>
-              <p className="font-mono-custom text-[9px] text-[#00F0FF]/40 tracking-widest uppercase mb-2 text-center">
-                Semifinals
-              </p>
-              {SF.map((m, i) => (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                >
-                  <BracketNode match={m} size="md" />
-                </motion.div>
-              ))}
-            </div>
-
-            {/* SF → Final connectors */}
-            <BracketConnectors count={2} color="#FBFF00" />
-
-            {/* Final */}
-            <div className="flex flex-col justify-center gap-4 flex-shrink-0" style={{ minHeight: '440px' }}>
-              <p className="font-mono-custom text-[9px] text-[#FBFF00]/60 tracking-widest uppercase mb-2 text-center">
+            {/* Grand Final */}
+            <div className="flex flex-col justify-center h-[600px]">
+              <h3 className="font-display text-xs tracking-widest text-[#FBFF00] uppercase mb-2">
                 Grand Final
-              </p>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.5 }}
-              >
-                <div
-                  className="glass-panel p-4 min-w-[180px] relative overflow-hidden"
-                  style={{
-                    border: '1px solid rgba(251,255,0,0.4)',
-                    boxShadow: '0 0 30px rgba(251,255,0,0.15)',
-                  }}
-                >
-                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#FBFF00] to-transparent" />
-                  <p className="font-display font-700 text-xs text-[#00F0FF] mb-1">{FINAL.teamA}</p>
-                  <div className="h-px bg-[#FBFF00]/20 my-2" />
-                  <p className="font-display font-700 text-xs text-[#FF00E5] mb-3">{FINAL.teamB}</p>
-                  <div className="flex items-center gap-1.5">
-                    <motion.div
-                      className="w-1.5 h-1.5 rounded-full bg-[#FBFF00]"
-                      animate={{ opacity: [1, 0.2, 1] }}
-                      transition={{ duration: 1.2, repeat: Infinity }}
-                    />
-                    <span className="font-mono-custom text-[9px] text-[#FBFF00] tracking-widest">UPCOMING</span>
-                  </div>
+              </h3>
+              <GlassCard className="min-w-[220px] p-4 border-[#FBFF00] shadow-[0_0_20px_rgba(251,255,0,0.4)]">
+                <p className="font-mono text-sm text-white">{final.teamA}</p>
+                <p className="text-[10px] text-white/30 font-display tracking-wider my-1">VS</p>
+                <p className="font-mono text-sm text-white">{final.teamB}</p>
+                <div className="mt-3 pt-2 border-t border-white/10 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FBFF00] shadow-[0_0_6px_#FBFF00]" />
+                  <span className="text-[10px] font-mono text-[#FBFF00] uppercase">
+                    Winner: {final.winner}
+                  </span>
                 </div>
-              </motion.div>
+              </GlassCard>
             </div>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
+}
+
+/* ── Reusable round column ── */
+function BracketRound({
+  title,
+  matches,
+  color,
+  connectorToNext,
+}: {
+  title: string;
+  matches: Match[];
+  color: string;
+  connectorToNext?: boolean;
+}) {
+  return (
+    <div className="flex flex-col justify-between h-[600px]">
+      <h3 className="font-display text-xs tracking-widest uppercase mb-1" style={{ color }}>
+        {title}
+      </h3>
+      {matches.map((match, i) => (
+        <motion.div
+          key={`${title}-${i}`}
+          className="relative"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.1 }}
+        >
+          <GlassCard className="min-w-[200px] p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-sm text-white">{match.teamA}</p>
+              {match.winner === match.teamA && <WinBadge color={color} />}
+            </div>
+            <p className="text-[10px] text-white/20 font-display tracking-wider my-1 text-center">
+              VS
+            </p>
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-sm text-white">{match.teamB}</p>
+              {match.winner === match.teamB && <WinBadge color={color} />}
+            </div>
+            {match.winner && (
+              <div className="mt-2 pt-2 border-t border-white/10 flex items-center gap-1.5">
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
+                />
+                <span className="text-[10px] font-mono uppercase" style={{ color }}>
+                  Winner
+                </span>
+              </div>
+            )}
+          </GlassCard>
+          {connectorToNext && (
+            <div
+              className="absolute top-1/2 -right-10 w-10 h-0.5"
+              style={{ backgroundColor: color, opacity: 0.3 }}
+            />
+          )}
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function WinBadge({ color }: { color: string }) {
+  return (
+    <span
+      className="ml-2 text-[10px] font-display tracking-widest uppercase px-1.5 py-0.5 rounded-sm border"
+      style={{ color, borderColor: color, boxShadow: `0 0 6px ${color}` }}
+    >
+      W
+    </span>
+  );
 }

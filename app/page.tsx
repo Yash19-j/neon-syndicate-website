@@ -17,13 +17,17 @@ export default async function Page() {
   const players = await getPlayers();
   const news = await getNews();
 
+  // Compute finalists (hardcoded simulation)
+  const finalistA = players[0] ?? null;
+  const finalistB = players[4] ?? null;
+
   return (
     <>
       <Navbar />
       <Hero />
-      <FeaturedMatch players={players} />   {/* ← add players prop */}
+      <FeaturedMatch players={players} finalistA={finalistA} finalistB={finalistB} />
       <TeamRoster players={players} />
-      <TournamentBracket />
+      <TournamentBracket players={players} />
       <LatestNews news={news} />
       <CTA />
       <Footer />

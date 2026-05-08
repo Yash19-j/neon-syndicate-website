@@ -8,59 +8,67 @@ import SectionDivider from "./ui/SectionDivider";
 import type { Player } from "@/src/lib/getPlayers";
 
 interface FeaturedMatchProps {
-  players: Player[];
+  players: Player[];        // full roster (still needed by other sections)
+  finalistA: Player | null; // Grand Final player 1
+  finalistB: Player | null; // Grand Final player 2
 }
 
-export default function FeaturedMatch({ players }: FeaturedMatchProps) {
-  const [timeLeft, setTimeLeft] = useState("");
+export default function FeaturedMatch({
+  players,
+  finalistA,
+  finalistB,
+}: FeaturedMatchProps) {
+  // ── Countdown timer (unchanged) ──
+  const targetTime = Date.now() + 2 * 60 * 60 * 1000;
 
-  // Target match time: 2 hours from page load
-  const targetTime = new Date(Date.now() + 2 * 60 * 60 * 1000).getTime();
+  function formatTime(ms: number) {
+    if (ms <= 0) return "LIVE NOW";
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${h.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+
+  const [timeLeft, setTimeLeft] = useState(() =>
+    formatTime(targetTime - Date.now())
+  );
 
   useEffect(() => {
-    function updateTimer() {
+    const interval = setInterval(() => {
       const diff = targetTime - Date.now();
       if (diff <= 0) {
         setTimeLeft("LIVE NOW");
+        clearInterval(interval);
         return;
       }
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft(
-        `${hours.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-      );
-    }
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
+      setTimeLeft(formatTime(diff));
+    }, 1000);
     return () => clearInterval(interval);
   }, [targetTime]);
 
-  // Safely take the first two players from the CMS (fallbacks in case array is empty)
-  const playerA = players?.[0] ?? {
+  // ── Finalists → displayed players (with fallback) ──
+  const playerA = finalistA ?? {
     id: "1",
     name: "TBD",
-    role: "Player",
+    role: "Finalist",
     avatar: null,
     stats: { kills: 0, wins: 0 },
   };
-  const playerB = players?.[1] ?? {
+  const playerB = finalistB ?? {
     id: "2",
     name: "TBD",
-    role: "Player",
+    role: "Finalist",
     avatar: null,
     stats: { kills: 0, wins: 0 },
   };
 
   return (
-    <section id="match" className="relative py-24 px-6 overflow-hidden">
-      {/* ---------- LAYER 1: Background ---------- */}
+    <section id="featured-match" className="relative py-24 px-6 overflow-hidden">
+      {/* Background */}
       <div className="absolute inset-0 bg-[#0A0A0F]" />
-
-      {/* ---------- LAYER 2: Midground (animated holographic rings) ---------- */}
+      {/* Midground rotating rings */}
       <div className="absolute inset-0 opacity-10">
         <motion.div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] border border-[#00F0FF] rounded-full"
@@ -74,12 +82,12 @@ export default function FeaturedMatch({ players }: FeaturedMatchProps) {
         />
       </div>
 
-      {/* ---------- LAYER 3: Content ---------- */}
+      {/* Content */}
       <div className="relative z-20">
-        <SectionDivider number="01" title="FEATURED MATCH" />
-
+        <SectionDivider number="01" title="FEATURED MATCH" color="#00F0FF" />
+        
         <div className="max-w-7xl mx-auto mt-16 flex flex-col lg:flex-row items-center justify-center gap-10">
-          {/* Player A */}
+          {/* Player A (Finalist) */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -110,12 +118,12 @@ export default function FeaturedMatch({ players }: FeaturedMatchProps) {
                     : "text-[#00F0FF]"
                 }`}
               >
-                {timeLeft || "LOADING..."}
+                {timeLeft}
               </p>
             </GlassCard>
           </motion.div>
 
-          {/* Player B */}
+          {/* Player B (Finalist) */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -126,8 +134,6 @@ export default function FeaturedMatch({ players }: FeaturedMatchProps) {
           </motion.div>
         </div>
       </div>
-
-      {/* ---------- LAYER 4: Foreground scanlines (global, not needed here) ---------- */}
     </section>
   );
 }
