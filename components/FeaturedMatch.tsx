@@ -11,11 +11,11 @@ interface FeaturedMatchProps {
   players: Player[]
   finalistA: Player | null
   finalistB: Player | null
-  matchDate: string | null   // ISO date string from CMS
+  matchDate: string | null
   map: string | null
 }
 
-// ── helpers ──────────────────────────────────────────────
+// Helper to generate initials from a name
 function initials(name: string): string {
   return name
     .split(/[\s_]+/)
@@ -24,11 +24,11 @@ function initials(name: string): string {
     .slice(0, 2)
 }
 
+// ── countdown hook (hydration‑safe) ──────────────────────
 function useCountdown(targetMs: number) {
   const [remaining, setRemaining] = useState<number | null>(null)
 
   useEffect(() => {
-    // first tick on the client
     let diff = targetMs - Date.now()
     if (diff < 0) diff = 0
     setRemaining(diff)
@@ -42,7 +42,6 @@ function useCountdown(targetMs: number) {
     return () => clearInterval(interval)
   }, [targetMs])
 
-  // While still null (server render + first paint), show a placeholder
   if (remaining === null) return 'LOADING...'
   if (remaining <= 0) return 'LIVE NOW'
 
@@ -60,6 +59,7 @@ function useCountdown(targetMs: number) {
   return parts.join(' ')
 }
 
+// ── viewer count hook ───────────────────────────────────
 function useViewerCount(base: number) {
   const [count, setCount] = useState(base)
   useEffect(() => {
@@ -78,7 +78,6 @@ export default function FeaturedMatch({
   matchDate,
   map,
 }: FeaturedMatchProps) {
-  // Use the CMS date if provided, otherwise fallback to 2 hours from now
   const targetTime = matchDate ? new Date(matchDate).getTime() : Date.now() + 2 * 60 * 60 * 1000
   const countdown = useCountdown(targetTime)
   const isLive = countdown === 'LIVE NOW'
@@ -105,8 +104,9 @@ export default function FeaturedMatch({
 
   return (
     <section id="featured-match" className="relative py-24 px-6 overflow-hidden">
-      {/* ... background and midground rings unchanged ... */}
+      {/* Background */}
       <div className="absolute inset-0 bg-[#0A0A0F]" />
+      {/* Midground rings */}
       <div className="absolute inset-0 opacity-10">
         <motion.div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] border border-[#00F0FF] rounded-full"
@@ -246,7 +246,7 @@ export default function FeaturedMatch({
   )
 }
 
-// ── player card (kills / wins / K/W ratio) ────────────────
+// ── player card with avatar support ──────────────────────
 function FeaturedPlayerCard({ player, color }: { player: Player; color: string }) {
   const kills = player.stats?.kills ?? 0
   const wins = player.stats?.wins ?? 0
@@ -260,15 +260,26 @@ function FeaturedPlayerCard({ player, color }: { player: Player; color: string }
       className="flex flex-col items-center"
     >
       <GlassCard className="w-full p-6 flex flex-col items-center card-hover">
+        {/* Avatar – show image if available, otherwise initials */}
         <div
-          className="w-24 h-24 rounded-full flex items-center justify-center mb-4 font-display font-black text-3xl text-white"
+          className="w-24 h-24 rounded-full flex items-center justify-center mb-4 overflow-hidden"
           style={{
-            background: `linear-gradient(135deg, ${color}33, ${color}88)`,
+            background: player.avatar ? 'transparent' : `linear-gradient(135deg, ${color}33, ${color}88)`,
             border: `2px solid ${color}`,
             boxShadow: `0 0 20px ${color}44`,
           }}
         >
-          {initials(player.name)}
+          {player.avatar ? (
+            <img
+              src={player.avatar}
+              alt={player.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="font-display font-black text-3xl text-white">
+              {initials(player.name)}
+            </span>
+          )}
         </div>
 
         <h3 className="font-orbitron font-bold text-xl text-white">{player.name}</h3>
