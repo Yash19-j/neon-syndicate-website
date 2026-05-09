@@ -3,6 +3,7 @@ import { Orbitron, Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/components/AuthContext'
 import AuthModal from '@/components/AuthModal'
+import Scanlines from '@/components/ui/Scanlines'
 import './globals.css'
 
 const orbitron = Orbitron({
@@ -42,6 +43,7 @@ export default function RootLayout({
           {children}
           <AuthModal />
         </AuthProvider>
+        <Scanlines/> 
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

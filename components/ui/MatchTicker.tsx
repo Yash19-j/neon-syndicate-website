@@ -1,22 +1,56 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import type { Player } from "@/src/lib/getPlayers";
 
-const TICKER_ITEMS = [
-  { label: 'CYBER PHEONIX', vs: 'RAZOR EDGE', info: 'Grand Final · JUNE 30', status: 'UPCOMING', color: '#FBFF00' },
-  { label: 'VOID STAR', vs: '3.41 K/D', info: 'New Pro Circuit Record', status: 'RECORD', color: '#FF00E5' },
-  { label: 'STROM HAWK', vs: 'RAZOR EDGE', info: 'SF Result · 1-2', status: 'RESULT', color: '#00F0FF' },
-  { label: 'CYBER PHEONIX', vs: 'NEON_VIPER', info: 'SF Result · 2-0', status: 'RESULT', color: '#00F0FF' },
-]
+interface MatchTickerProps {
+  finalistA: Player | null;
+  finalistB: Player | null;
+}
 
-export default function MatchTicker() {
+export default function MatchTicker({ finalistA, finalistB }: MatchTickerProps) {
+  const [timeLeft, setTimeLeft] = useState("");
+  const targetTime = new Date("2026-05-30T14:00:00Z").getTime();
+
+  function formatTime(ms: number) {
+    if (ms <= 0) return "LIVE NOW";
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${h.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
+
+  useEffect(() => {
+    const update = () => setTimeLeft(formatTime(targetTime - Date.now()));
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nameA = finalistA?.name ?? "TBD";
+  const nameB = finalistB?.name ?? "TBD";
+
+  // Build dynamic ticker items – at least the Grand Final
+  const tickerItems = [
+    {
+      label: nameA,
+      vs: nameB,
+      info: `Grand Final · May 30, 2 PM · ${timeLeft || "LOADING..."}`,
+      status: "UPCOMING",
+      color: "#FBFF00",
+    },
+  ];
+
   return (
     <motion.div
       className="glass-panel flex items-center gap-0 overflow-hidden w-[320px] sm:w-[420px]"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1.2, duration: 0.6 }}
-      style={{ height: '44px' }}
+      style={{ height: "44px" }}
     >
       {/* Live badge */}
       <div className="flex items-center gap-2 px-3 shrink-0 border-r border-white/10 h-full">
@@ -25,14 +59,19 @@ export default function MatchTicker() {
           animate={{ opacity: [1, 0.2, 1] }}
           transition={{ duration: 1, repeat: Infinity }}
         />
-        <span className="font-display text-[9px] tracking-widest text-[#FF00E5] uppercase">Live</span>
+        <span className="font-display text-[9px] tracking-widest text-[#FF00E5] uppercase">
+          Live
+        </span>
       </div>
 
-      {/* Scrolling ticker — pure CSS so no Framer Motion color issues */}
+      {/* Scrolling ticker */}
       <div className="flex-1 overflow-hidden relative h-full">
         <div className="ticker-animate flex items-center h-full whitespace-nowrap">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-            <span key={i} className="inline-flex items-center gap-2 px-5 font-mono-custom text-[11px]">
+          {[...tickerItems, ...tickerItems].map((item, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-2 px-5 font-mono-custom text-[11px]"
+            >
               <span className="text-white/70">{item.label}</span>
               <span style={{ color: item.color }}>vs</span>
               <span className="text-white/70">{item.vs}</span>
@@ -44,5 +83,5 @@ export default function MatchTicker() {
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

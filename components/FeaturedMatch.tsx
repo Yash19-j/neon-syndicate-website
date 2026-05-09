@@ -1,139 +1,296 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import GlassCard from "./ui/GlassCard";
-import PlayerCard from "./ui/PlayerCard";
-import SectionDivider from "./ui/SectionDivider";
-import type { Player } from "@/src/lib/getPlayers";
+import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import SectionDivider from './ui/SectionDivider'
+import GlassCard from './ui/GlassCard'
+import NeonButton from './ui/NeonButton'
+import type { Player } from '@/src/lib/getPlayers'
 
 interface FeaturedMatchProps {
-  players: Player[];        // full roster (still needed by other sections)
-  finalistA: Player | null; // Grand Final player 1
-  finalistB: Player | null; // Grand Final player 2
+  players: Player[]
+  finalistA: Player | null
+  finalistB: Player | null
+  matchDate: string | null   // ISO date string from CMS
+  map: string | null
+}
+
+// ── helpers ──────────────────────────────────────────────
+function initials(name: string): string {
+  return name
+    .split(/[\s_]+/)
+    .map(w => w[0]?.toUpperCase())
+    .join('')
+    .slice(0, 2)
+}
+
+function useCountdown(targetMs: number) {
+  const [remaining, setRemaining] = useState<number | null>(null)
+
+  useEffect(() => {
+    // first tick on the client
+    let diff = targetMs - Date.now()
+    if (diff < 0) diff = 0
+    setRemaining(diff)
+
+    const interval = setInterval(() => {
+      diff = targetMs - Date.now()
+      if (diff < 0) diff = 0
+      setRemaining(diff)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [targetMs])
+
+  // While still null (server render + first paint), show a placeholder
+  if (remaining === null) return 'LOADING...'
+  if (remaining <= 0) return 'LIVE NOW'
+
+  const totalSeconds = Math.floor(remaining / 1000)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  const parts = []
+  if (days > 0) parts.push(`${days}d`)
+  if (hours > 0 || days > 0) parts.push(`${hours.toString().padStart(2, '0')}h`)
+  parts.push(`${minutes.toString().padStart(2, '0')}m`)
+  parts.push(`${seconds.toString().padStart(2, '0')}s`)
+  return parts.join(' ')
+}
+
+function useViewerCount(base: number) {
+  const [count, setCount] = useState(base)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCount(c => c + Math.floor((Math.random() - 0.3) * 20))
+    }, 3000)
+    return () => clearInterval(id)
+  }, [])
+  return count.toLocaleString()
 }
 
 export default function FeaturedMatch({
   players,
   finalistA,
   finalistB,
+  matchDate,
+  map,
 }: FeaturedMatchProps) {
-  // ── Countdown timer (unchanged) ──
-  const targetTime = Date.now() + 2 * 60 * 60 * 1000;
+  // Use the CMS date if provided, otherwise fallback to 2 hours from now
+  const targetTime = matchDate ? new Date(matchDate).getTime() : Date.now() + 2 * 60 * 60 * 1000
+  const countdown = useCountdown(targetTime)
+  const isLive = countdown === 'LIVE NOW'
+  const viewers = useViewerCount(14_280)
 
-  function formatTime(ms: number) {
-    if (ms <= 0) return "LIVE NOW";
-    const h = Math.floor(ms / 3600000);
-    const m = Math.floor((ms % 3600000) / 60000);
-    const s = Math.floor((ms % 60000) / 1000);
-    return `${h.toString().padStart(2, "0")}:${m
-      .toString()
-      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  const playerA = finalistA ?? {
+    id: '1',
+    name: 'TBD',
+    role: 'Player',
+    avatar: null,
+    stats: { kills: 0, wins: 0 },
+  }
+  const playerB = finalistB ?? {
+    id: '2',
+    name: 'TBD',
+    role: 'Player',
+    avatar: null,
+    stats: { kills: 0, wins: 0 },
   }
 
-  const [timeLeft, setTimeLeft] = useState(() =>
-    formatTime(targetTime - Date.now())
-  );
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const diff = targetTime - Date.now();
-      if (diff <= 0) {
-        setTimeLeft("LIVE NOW");
-        clearInterval(interval);
-        return;
-      }
-      setTimeLeft(formatTime(diff));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [targetTime]);
-
-  // ── Finalists → displayed players (with fallback) ──
-  const playerA = finalistA ?? {
-    id: "1",
-    name: "TBD",
-    role: "Finalist",
-    avatar: null,
-    stats: { kills: 0, wins: 0 },
-  };
-  const playerB = finalistB ?? {
-    id: "2",
-    name: "TBD",
-    role: "Finalist",
-    avatar: null,
-    stats: { kills: 0, wins: 0 },
-  };
+  const A_COLOR = '#00F0FF'
+  const B_COLOR = '#FF00E5'
+  const mapName = map ?? 'NEO_TOKYO_2049'
 
   return (
     <section id="featured-match" className="relative py-24 px-6 overflow-hidden">
-      {/* Background */}
+      {/* ... background and midground rings unchanged ... */}
       <div className="absolute inset-0 bg-[#0A0A0F]" />
-      {/* Midground rotating rings */}
       <div className="absolute inset-0 opacity-10">
         <motion.div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] border border-[#00F0FF] rounded-full"
           animate={{ rotate: 360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         />
         <motion.div
           className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] border border-[#FF00E5] rounded-full"
           animate={{ rotate: -360 }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
         />
       </div>
 
-      {/* Content */}
-      <div className="relative z-20">
-        <SectionDivider number="01" title="FEATURED MATCH" color="#00F0FF" />
-        
-        <div className="max-w-7xl mx-auto mt-16 flex flex-col lg:flex-row items-center justify-center gap-10">
-          {/* Player A (Finalist) */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="w-full max-w-xs"
-          >
-            <PlayerCard player={playerA} />
-          </motion.div>
+      <div className="relative z-20 max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <SectionDivider number="01" title="FEATURED MATCH" color="#00F0FF" />
+        </motion.div>
 
-          {/* VS Card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="w-full max-w-sm"
-          >
-            <GlassCard className="p-10 text-center">
-              <p className="text-6xl font-orbitron font-black text-[#FBFF00] drop-shadow-[0_0_15px_rgba(251,255,0,0.6)]">
-                VS
-              </p>
-              <p className="text-sm text-[#A0A0C0] mt-4 font-mono tracking-widest uppercase">
-                NEO TOKYO 2049
-              </p>
-              <p
-                className={`text-2xl font-mono mt-4 ${
-                  timeLeft === "LIVE NOW"
-                    ? "text-[#FF00E5] animate-pulse"
-                    : "text-[#00F0FF]"
-                }`}
-              >
-                {timeLeft}
-              </p>
-            </GlassCard>
-          </motion.div>
+        <div className="flex flex-col lg:flex-row items-stretch gap-6 mt-16">
+          {/* left player card */}
+          <div className="flex-1 flex flex-col justify-center">
+            <FeaturedPlayerCard player={playerA} color={A_COLOR} />
+          </div>
 
-          {/* Player B (Finalist) */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="w-full max-w-xs"
-          >
-            <PlayerCard player={playerB} />
-          </motion.div>
+          {/* central match card */}
+          <GlassCard className="flex-[2] flex flex-col items-center justify-center p-8 gap-6 relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1/3 bg-gradient-to-r from-[#00F0FF]/8 to-transparent pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#FF00E5]/8 to-transparent pointer-events-none" />
+
+            {/* teams */}
+            <div className="flex items-center justify-center gap-6 w-full">
+              <div className="flex flex-col items-center gap-3 flex-1">
+                <div
+                  className="w-16 h-16 rounded-sm flex items-center justify-center font-display font-black text-xl text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${A_COLOR}40, ${A_COLOR}15)`,
+                    border: `2px solid ${A_COLOR}`,
+                    boxShadow: `0 0 20px ${A_COLOR}44`,
+                  }}
+                >
+                  {initials(playerA.name)}
+                </div>
+                <p className="font-display font-700 text-xs tracking-widest text-white/80 text-center">
+                  {playerA.name}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <span className="font-display font-black text-4xl md:text-6xl text-[#FBFF00] drop-shadow-[0_0_20px_rgba(251,255,0,0.6)]">
+                  VS
+                </span>
+                <p className="font-mono-custom text-[9px] tracking-widest text-white/30">GRAND FINAL</p>
+              </div>
+
+              <div className="flex flex-col items-center gap-3 flex-1">
+                <div
+                  className="w-16 h-16 rounded-sm flex items-center justify-center font-display font-black text-xl text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${B_COLOR}40, ${B_COLOR}15)`,
+                    border: `2px solid ${B_COLOR}`,
+                    boxShadow: `0 0 20px ${B_COLOR}44`,
+                  }}
+                >
+                  {initials(playerB.name)}
+                </div>
+                <p className="font-display font-700 text-xs tracking-widest text-white/80 text-center">
+                  {playerB.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-[#00F0FF]/30 to-transparent" />
+
+            {/* map + countdown */}
+            <div className="flex flex-col items-center gap-3">
+              <p className="font-mono-custom text-[#00F0FF]/50 text-xs tracking-widest uppercase">
+                MAP: {mapName}
+              </p>
+              {isLive ? (
+                <div className="flex flex-col items-center gap-3">
+                  <motion.div
+                    className="flex items-center gap-2 px-4 py-2 rounded-sm border border-[#FF00E5]/60 bg-[#FF00E5]/10"
+                    animate={{ opacity: [1, 0.6, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-[#FF00E5]" />
+                    <span className="font-display font-bold text-[#FF00E5] tracking-widest text-sm">
+                      LIVE NOW
+                    </span>
+                  </motion.div>
+                  <p className="font-mono-custom text-[10px] text-white/30 tracking-widest">
+                    {viewers} viewers
+                  </p>
+                  <NeonButton variant="cyan" size="sm">
+                    Watch Stream
+                  </NeonButton>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <p className="font-mono-custom text-white/30 text-[10px] tracking-widest uppercase">
+                    Match starts in
+                  </p>
+                  <p className="font-display font-black text-3xl md:text-4xl text-[#FBFF00] drop-shadow-[0_0_15px_rgba(251,255,0,0.6)] tracking-widest">
+                    {countdown}
+                  </p>
+                  <p className="font-mono-custom text-[10px] text-white/20 tracking-widest">
+                    {viewers} registered to watch
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* best of 3 */}
+            <div className="flex items-center gap-2">
+              {[1, 2, 3].map(g => (
+                <div
+                  key={g}
+                  className="w-8 h-8 rounded-sm border border-white/10 flex items-center justify-center"
+                >
+                  <span className="font-mono-custom text-[10px] text-white/30">G{g}</span>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          {/* right player card */}
+          <div className="flex-1 flex flex-col justify-center">
+            <FeaturedPlayerCard player={playerB} color={B_COLOR} />
+          </div>
         </div>
       </div>
     </section>
-  );
+  )
+}
+
+// ── player card (kills / wins / K/W ratio) ────────────────
+function FeaturedPlayerCard({ player, color }: { player: Player; color: string }) {
+  const kills = player.stats?.kills ?? 0
+  const wins = player.stats?.wins ?? 0
+  const ratio = wins > 0 ? (kills / wins).toFixed(1) : '—'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="flex flex-col items-center"
+    >
+      <GlassCard className="w-full p-6 flex flex-col items-center card-hover">
+        <div
+          className="w-24 h-24 rounded-full flex items-center justify-center mb-4 font-display font-black text-3xl text-white"
+          style={{
+            background: `linear-gradient(135deg, ${color}33, ${color}88)`,
+            border: `2px solid ${color}`,
+            boxShadow: `0 0 20px ${color}44`,
+          }}
+        >
+          {initials(player.name)}
+        </div>
+
+        <h3 className="font-orbitron font-bold text-xl text-white">{player.name}</h3>
+        <p className="text-xs text-[#A0A0C0] font-display tracking-[0.3em] uppercase mt-1">
+          {player.role}
+        </p>
+
+        <div className="w-full mt-6 grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p className="text-2xl font-mono text-white">{kills}</p>
+            <p className="text-[10px] text-[#A0A0C0] uppercase tracking-widest mt-1">Kills</p>
+          </div>
+          <div>
+            <p className="text-2xl font-mono text-white">{wins}</p>
+            <p className="text-[10px] text-[#A0A0C0] uppercase tracking-widest mt-1">Wins</p>
+          </div>
+          <div>
+            <p className="text-2xl font-mono text-white">{ratio}</p>
+            <p className="text-[10px] text-[#A0A0C0] uppercase tracking-widest mt-1">K/W</p>
+          </div>
+        </div>
+      </GlassCard>
+    </motion.div>
+  )
 }

@@ -1,36 +1,45 @@
-import Scanlines from '@/components/ui/Scanlines'
+import { getPlayers } from '@/src/lib/getPlayers'
+import { getNews } from '@/src/lib/getNews'
+import { getMatches } from '@/src/lib/getMatches'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
+import FeaturedMatch from '@/components/FeaturedMatch'
 import TeamRoster from '@/components/TeamRoster'
 import TournamentBracket from '@/components/TournamentBracket'
 import LatestNews from '@/components/LatestNews'
 import CTA from '@/components/CTA'
 import Footer from '@/components/Footer'
-import { AuthProvider } from '@/components/AuthContext'
-import AuthModal from '@/components/AuthModal'
 
-import { getPlayers } from '@/src/lib/getPlayers';
-import { getNews } from '@/src/lib/getNews';
-import FeaturedMatch from "@/components/FeaturedMatch";
+export const revalidate = 60
 
 export default async function Page() {
-  const players = await getPlayers();
-  const news = await getNews();
+  const players = await getPlayers()
+  const news = await getNews()
+  const matches = await getMatches()
 
-  // Compute finalists (hardcoded simulation)
-  const finalistA = players[0] ?? null;
-  const finalistB = players[4] ?? null;
+  // Find the Grand Final match (CMS "round" field might be "Final")
+  const finalMatch = matches.find(m => m.round.toLowerCase().includes('final')) ?? null
+
+  // Finalists come from the Grand Final's teamA / teamB
+  const finalistA = finalMatch?.teamA ?? players[0] ?? null
+  const finalistB = finalMatch?.teamB ?? players[4] ?? null
 
   return (
     <>
       <Navbar />
-      <Hero />
-      <FeaturedMatch players={players} finalistA={finalistA} finalistB={finalistB} />
+      <Hero finalistA={finalistA} finalistB={finalistB} />
+      <FeaturedMatch
+        players={players}
+        finalistA={finalistA}
+        finalistB={finalistB}
+        matchDate={finalMatch?.matchDate ?? null}
+        map={finalMatch?.map ?? null}
+      />
       <TeamRoster players={players} />
-      <TournamentBracket players={players} />
+      <TournamentBracket matches={matches} />
       <LatestNews news={news} />
       <CTA />
       <Footer />
     </>
-  );
+  )
 }
