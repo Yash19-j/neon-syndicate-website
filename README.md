@@ -17,7 +17,7 @@ All dynamic content is managed headlessly via **Contentful CMS** and updates aut
 
 ## 🚀 Live Site
 
-[neon-syndicate.vercel.app](https://neon-syndicate.vercel.app) *(replace with your actual URL)*
+[Neon Syndicate ](https://neon-syndicate-website.vercel.app/) 
 
 ---
 
@@ -82,7 +82,7 @@ text
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/neon-syndicate.git
+git clone https://github.com/Yash19-j/neon-syndicate-website
 cd neon-syndicate
 npm install
 Environment Variables
